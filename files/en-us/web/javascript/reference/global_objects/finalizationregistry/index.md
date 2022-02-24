@@ -16,7 +16,7 @@ A **`FinalizationRegistry`** object lets you request a callback when an object i
 
 `FinalizationRegistry` provides a way to request that a _cleanup callback_ get called at some point when an object registered with the registry has been _reclaimed_ (garbage-collected). (Cleanup callbacks are sometimes called _finalizers_.)
 
-> **Note:** Cleanup callbacks should not be used for essential program logic. See [Notes on cleanup callbacks](#notes_on_cleanup_callbacks) for details.
+> **Note:** Cleanup callbacks should not be used for unskippable program logic. See [Notes on cleanup callbacks](#notes_on_cleanup_callbacks) for details.
 
 You create the registry passing in the callback:
 
@@ -85,8 +85,9 @@ Here are some specific points that the authors of the WeakRef proposal that Fina
 
 Some notes on cleanup callbacks:
 
-- Developers shouldn't rely on cleanup callbacks for essential program logic. Cleanup callbacks may be useful for reducing memory usage across the course of a program, but are unlikely to be useful otherwise.
+- Developers shouldn't rely for correctness on cleanup callbacks being invoked. Cleanup callbacks may be useful for reducing memory usage across the course of a program, but are unlikely to be useful otherwise.
 - A conforming JavaScript implementation, even one that does garbage collection, is not required to call cleanup callbacks. When and whether it does so is entirely down to the implementation of the JavaScript engine. When a registered object is reclaimed, any cleanup callbacks for it may be called then, or some time later, or not at all.
+- A registered object may become eligible for finalization later or earlier(!) than one might suppose from a naïve reading of the source code. The earliest point where an object may become finalized is not particularly well-specified; references held by closures and caches may defer finalization, while optimizations like scalar replacement may hasten it.
 - It's likely that major implementations will call cleanup callbacks at some point during execution, but those calls may be substantially after the related object was reclaimed.
 - There are also situations where even implementations that normally call cleanup callbacks are unlikely to call them:
 
